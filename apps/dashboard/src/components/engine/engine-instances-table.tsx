@@ -2,6 +2,7 @@ import { Spinner } from "@/components/ui/Spinner/Spinner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox, CheckboxWithLabel } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -13,12 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ToolTipLabel } from "@/components/ui/tooltip";
 import {
+  type DeleteCloudHostedInput,
   type EditEngineInstanceInput,
   type EngineInstance,
-  type RemoveCloudHostedInput,
+  useEngineDeleteCloudHosted,
   useEngineEditInstance,
   type useEngineInstances,
-  useEngineRemoveCloudHosted,
   useEngineRemoveFromDashboard,
 } from "@3rdweb-sdk/react/hooks/useEngine";
 import { FormControl, Radio, RadioGroup } from "@chakra-ui/react";
@@ -28,7 +29,7 @@ import { TWTable } from "components/shared/TWTable";
 import { useTrack } from "hooks/analytics/useTrack";
 import {
   CircleAlertIcon,
-  SendIcon,
+  InfoIcon,
   Trash2Icon,
   TriangleAlertIcon,
 } from "lucide-react";
@@ -38,6 +39,7 @@ import { useForm } from "react-hook-form";
 import { BiPencil } from "react-icons/bi";
 import { FiTrash } from "react-icons/fi";
 import { toast } from "sonner";
+import invariant from "tiny-invariant";
 import { FormLabel } from "tw-components";
 
 interface EngineInstancesTableProps {
@@ -258,7 +260,7 @@ const EditModal = (props: {
 
           <DialogFooter className="mt-10 gap-2">
             <Button onClick={() => onOpenChange(false)} variant="outline">
-              Cancel
+              Close
             </Button>
             <Button
               type="submit"
@@ -295,7 +297,7 @@ const RemoveModal = (props: {
             close={() => onOpenChange(false)}
           />
         ) : (
-          <CancelSubscriptionModalContent
+          <DeleteSubscriptionModalContent
             refetch={refetch}
             instance={instance}
             close={() => onOpenChange(false)}
@@ -318,18 +320,22 @@ function RemoveFromDashboardModalContent(props: {
     <>
       <DialogHeader>
         <DialogTitle className="mb-3 font-semibold text-2xl tracking-tight">
-          Remove Engine Instance
+          Remove Engine
         </DialogTitle>
         <DialogDescription className="text-muted-foreground">
           <span className="mb-2 block">
-            Are you sure you want to remove
-            <em className="font-semibold not-italic">"{instance.name}"</em> from
+            Are you sure you want to remove{" "}
+            <em className="font-semibold not-italic">{instance.name}</em> from
             your dashboard?
           </span>
-          <span className="block">
-            This action does not modify your Engine infrastructure. You can
-            re-add it at any time.
-          </span>
+
+          <Alert variant="info">
+            <InfoIcon className="size-5" />
+            <AlertTitle>
+              This action does not modify your Engine infrastructure.
+            </AlertTitle>
+            <AlertDescription>You can re-add it at any time.</AlertDescription>
+          </Alert>
         </DialogDescription>
       </DialogHeader>
 
@@ -367,17 +373,22 @@ function RemoveFromDashboardModalContent(props: {
   );
 }
 
-function CancelSubscriptionModalContent(props: {
+function DeleteSubscriptionModalContent(props: {
   refetch: () => void;
   instance: EngineInstance;
   close: () => void;
 }) {
   const { refetch, instance, close } = props;
-  const removeCloudHosted = useEngineRemoveCloudHosted();
+  invariant(
+    instance.deploymentId,
+    "Instance must have a deploymentId to be cancelled.",
+  );
 
-  const form = useForm<RemoveCloudHostedInput>({
+  const deleteCloudHosted = useEngineDeleteCloudHosted();
+  const [ackDeletion, setAckDeletion] = useState(false);
+  const form = useForm<DeleteCloudHostedInput>({
     defaultValues: {
-      instanceId: instance.id,
+      deploymentId: instance.deploymentId,
     },
     reValidateMode: "onChange",
   });
@@ -386,33 +397,25 @@ function CancelSubscriptionModalContent(props: {
     <div>
       <DialogHeader>
         <DialogTitle className="mb-1 font-semibold text-2xl tracking-tight">
-          Cancel Engine Subscription
+          Permanently Delete Engine
         </DialogTitle>
-        <DialogDescription className="text-muted-foreground">
-          Complete this form to request to cancel your Engine subscription. This
-          may take up to 2 business days.
-        </DialogDescription>
       </DialogHeader>
 
-      <div className="h-3" />
+      <div className="h-4" />
 
-      <Alert variant="destructive">
-        <TriangleAlertIcon className="!text-destructive-text size-5" />
-        <AlertTitle>This action is irreversible!</AlertTitle>
-        <AlertDescription>
-          You will no longer be able to access this Engine's local backend
-          wallets. <strong>Any remaining mainnet funds will be lost.</strong>
-        </AlertDescription>
-      </Alert>
+      <p className="text-muted-foreground">
+        This step will cancel your monthly subscription and immediately delete
+        all data and infrastructure for this Engine.
+      </p>
 
-      <div className="h-5" />
+      <div className="h-4" />
 
       <form
         onSubmit={form.handleSubmit((data) =>
-          removeCloudHosted.mutate(data, {
+          deleteCloudHosted.mutate(data, {
             onSuccess: () => {
               toast.success(
-                "Submitted a request to cancel your Engine subscription. This may take up to 2 business days.",
+                "Deleting Engine. Please check again in a few minutes.",
                 {
                   dismissible: true,
                   duration: 10000,
@@ -424,16 +427,16 @@ function CancelSubscriptionModalContent(props: {
             },
             onError: () => {
               toast.error(
-                "Error requesting to cancel your Engine subscription",
+                "Error deleting Engine. Please visit https://thirdweb.com/support.",
               );
             },
           }),
         )}
       >
-        {/* Form */}
+        {/* Reason */}
         <FormControl isRequired>
           <FormLabel className="!text-base">
-            Please share any feedback to help us improve
+            Please share your feedback to help us improve Engine.
           </FormLabel>
           <RadioGroup>
             <div className="flex flex-col gap-2">
@@ -467,13 +470,32 @@ function CancelSubscriptionModalContent(props: {
 
         <div className="h-2" />
 
+        {/* Feedback */}
         <Textarea
           className="mt-3"
           placeholder="Provide additional feedback"
           {...form.register("feedback")}
         />
 
-        <div className="h-8" />
+        <div className="h-4" />
+
+        <Alert variant="destructive">
+          <TriangleAlertIcon className="!text-destructive-text size-5" />
+          <AlertTitle>This action is irreversible!</AlertTitle>
+
+          <AlertDescription className="!pl-0 pt-2">
+            <CheckboxWithLabel>
+              <Checkbox
+                checked={ackDeletion}
+                onCheckedChange={(checked) => setAckDeletion(!!checked)}
+              />
+              I understand that access to my local backend wallets and any
+              remaining funds will be lost.
+            </CheckboxWithLabel>
+          </AlertDescription>
+        </Alert>
+
+        <div className="h-4" />
 
         <DialogFooter className="gap-2">
           <Button onClick={close} variant="outline">
@@ -482,15 +504,15 @@ function CancelSubscriptionModalContent(props: {
           <Button
             type="submit"
             variant="destructive"
-            disabled={!form.formState.isValid}
+            disabled={
+              !ackDeletion ||
+              deleteCloudHosted.isPending ||
+              !form.formState.isValid
+            }
             className="gap-2"
           >
-            {removeCloudHosted.isPending ? (
-              <Spinner className="size-4" />
-            ) : (
-              <SendIcon className="size-4" />
-            )}
-            Request to cancel
+            {deleteCloudHosted.isPending && <Spinner className="size-4" />}
+            Yes, delete this Engine
           </Button>
         </DialogFooter>
       </form>
