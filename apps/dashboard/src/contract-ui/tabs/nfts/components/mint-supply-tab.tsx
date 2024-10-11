@@ -5,7 +5,7 @@ import { TransactionButton } from "components/buttons/TransactionButton";
 import { useTrack } from "hooks/analytics/useTrack";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import type { ThirdwebContract } from "thirdweb";
+import { type ThirdwebContract, isAddress } from "thirdweb";
 import { mintAdditionalSupplyTo } from "thirdweb/extensions/erc1155";
 import { useActiveAccount, useSendAndConfirmTransaction } from "thirdweb/react";
 import { FormErrorMessage, FormHelperText, FormLabel } from "tw-components";
@@ -34,10 +34,8 @@ const MintSupplyTab: React.FC<MintSupplyTabProps> = ({ contract, tokenId }) => {
     <form
       className="flex w-full flex-col gap-2"
       onSubmit={handleSubmit((data) => {
-        if (!data.to) {
-          return toast.error(
-            "Please enter the wallet address of the recipient.",
-          );
+        if (!isAddress(data.to)) {
+          return toast.error("Address is invalid.");
         }
         trackEvent({
           category: "nft",
@@ -86,10 +84,8 @@ const MintSupplyTab: React.FC<MintSupplyTabProps> = ({ contract, tokenId }) => {
             placeholder="0x..."
             defaultValue={address || ""}
             {...register("to")}
+            isRequired
           />
-          <FormHelperText>
-            Address to receive the NFT(s) - Defaults to your own wallet
-          </FormHelperText>
           <FormErrorMessage>{errors.to?.message}</FormErrorMessage>
         </FormControl>
       </div>
