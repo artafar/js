@@ -135,7 +135,7 @@ export const EngineInstancesTable: React.FC<EngineInstancesTableProps> = ({
   return (
     <>
       <TWTable
-        title="engine instances"
+        title="Your Engines"
         data={instances}
         columns={columns}
         isFetched={isFetched}
@@ -156,7 +156,7 @@ export const EngineInstancesTable: React.FC<EngineInstancesTableProps> = ({
           },
           {
             icon: FiTrash,
-            text: "Remove",
+            text: "Delete",
             onClick: (instance) => {
               trackEvent({
                 category: "engine",
@@ -393,6 +393,25 @@ function DeleteSubscriptionModalContent(props: {
     reValidateMode: "onChange",
   });
 
+  const onSubmit = (data: DeleteCloudHostedInput) => {
+    deleteCloudHosted.mutate(data, {
+      onSuccess: () => {
+        toast.success("Deleting Engine. Please check again in a few minutes.", {
+          dismissible: true,
+          duration: 10000,
+        });
+
+        refetch();
+        close();
+      },
+      onError: () => {
+        toast.error(
+          "Error deleting Engine. Please visit https://thirdweb.com/support.",
+        );
+      },
+    });
+  };
+
   return (
     <div>
       <DialogHeader>
@@ -410,29 +429,7 @@ function DeleteSubscriptionModalContent(props: {
 
       <div className="h-4" />
 
-      <form
-        onSubmit={form.handleSubmit((data) =>
-          deleteCloudHosted.mutate(data, {
-            onSuccess: () => {
-              toast.success(
-                "Deleting Engine. Please check again in a few minutes.",
-                {
-                  dismissible: true,
-                  duration: 10000,
-                },
-              );
-
-              refetch();
-              close();
-            },
-            onError: () => {
-              toast.error(
-                "Error deleting Engine. Please visit https://thirdweb.com/support.",
-              );
-            },
-          }),
-        )}
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         {/* Reason */}
         <FormControl isRequired>
           <FormLabel className="!text-base">
@@ -512,7 +509,7 @@ function DeleteSubscriptionModalContent(props: {
             className="gap-2"
           >
             {deleteCloudHosted.isPending && <Spinner className="size-4" />}
-            Yes, delete this Engine
+            Permanently Delete Engine
           </Button>
         </DialogFooter>
       </form>
