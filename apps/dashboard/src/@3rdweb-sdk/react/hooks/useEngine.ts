@@ -261,9 +261,9 @@ export function useEngineDeleteCloudHosted() {
       feedback,
     }: DeleteCloudHostedInput) => {
       const res = await fetch(
-        `${THIRDWEB_API_HOST}/v2/engine/deployments/${deploymentId}/infrastructure`,
+        `${THIRDWEB_API_HOST}/v2/engine/deployments/${deploymentId}/infrastructure/delete`,
         {
-          method: "DELETE",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
