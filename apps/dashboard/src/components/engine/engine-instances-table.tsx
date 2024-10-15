@@ -29,6 +29,7 @@ import { TWTable } from "components/shared/TWTable";
 import { useTrack } from "hooks/analytics/useTrack";
 import {
   CircleAlertIcon,
+  InfoIcon,
   PencilIcon,
   Trash2Icon,
   TriangleAlertIcon,
