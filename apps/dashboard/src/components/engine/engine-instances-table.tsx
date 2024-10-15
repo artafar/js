@@ -29,15 +29,13 @@ import { TWTable } from "components/shared/TWTable";
 import { useTrack } from "hooks/analytics/useTrack";
 import {
   CircleAlertIcon,
-  InfoIcon,
+  PencilIcon,
   Trash2Icon,
   TriangleAlertIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
-import { BiPencil } from "react-icons/bi";
-import { FiTrash } from "react-icons/fi";
 import { toast } from "sonner";
 import invariant from "tiny-invariant";
 import { FormLabel } from "tw-components";
@@ -142,7 +140,7 @@ export const EngineInstancesTable: React.FC<EngineInstancesTableProps> = ({
         isPending={isPending}
         onMenuClick={[
           {
-            icon: BiPencil,
+            icon: <PencilIcon className="size-4" />,
             text: "Edit",
             onClick: (instance) => {
               trackEvent({
@@ -155,7 +153,7 @@ export const EngineInstancesTable: React.FC<EngineInstancesTableProps> = ({
             },
           },
           {
-            icon: FiTrash,
+            icon: <Trash2Icon className="size-4" />,
             text: "Delete",
             onClick: (instance) => {
               trackEvent({
