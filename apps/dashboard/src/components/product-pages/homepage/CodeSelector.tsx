@@ -1,9 +1,8 @@
-import { Flex, Icon } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 import { useTrack } from "hooks/analytics/useTrack";
+import { CodeIcon, FileIcon } from "lucide-react";
 import { themes } from "prism-react-renderer";
 import { useState } from "react";
-import { AiOutlineCode } from "react-icons/ai";
-import { CgFileDocument } from "react-icons/cg";
 import {
   Card,
   CodeBlock,
@@ -160,7 +159,7 @@ export const CodeSelector: React.FC<CodeSelectorProps> = ({
             px={4}
             text="Docs"
             href={docs}
-            icon={<Icon color="white" as={CgFileDocument} />}
+            icon={<FileIcon className="text-white" />}
             onClick={() =>
               trackEvent({
                 category: "code-selector",
@@ -173,7 +172,7 @@ export const CodeSelector: React.FC<CodeSelectorProps> = ({
           <CustomLinkButton
             text="Run"
             href={`https://replit.com/@thirdweb/${activeLanguage}-sdk`}
-            icon={<Icon color="white" as={AiOutlineCode} />}
+            icon={<CodeIcon className="text-white" />}
             onClick={() =>
               trackEvent({
                 category: "code-selector",
