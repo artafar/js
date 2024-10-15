@@ -1,5 +1,13 @@
 # thirdweb
 
+## 5.61.7
+
+### Patch Changes
+
+- [#5029](https://github.com/thirdweb-dev/js/pull/5029) [`da9f196`](https://github.com/thirdweb-dev/js/commit/da9f1964e4ae74ed5d33666788e2d16e4d56614d) Thanks [@jnsdls](https://github.com/jnsdls)! - update dependencies
+
+- [#5009](https://github.com/thirdweb-dev/js/pull/5009) [`6faf63f`](https://github.com/thirdweb-dev/js/commit/6faf63ff9597926f855263008014acfd4c349e5e) Thanks [@kien-ngo](https://github.com/kien-ngo)! - Fix upload logic for delayed reveal batch
+
 ## 5.61.6
 
 ### Patch Changes
